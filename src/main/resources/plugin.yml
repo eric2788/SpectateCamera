@@ -1,0 +1,15 @@
+name: SpectateCamera
+main: com.ericlam.mc.spectate.camera.SpectateCamera
+version: ${project.version}
+api-version: "1.16"
+depend: [KotLib, ProtocolLib, PacketWrapper]
+commands:
+  camera:
+    description: camera command
+permissions:
+  camera.create:
+    description: camera create command
+  camera.remove.other:
+    description: camera remove command
+  camera.use.other:
+    description: camera use command
