@@ -42,7 +42,7 @@ object CameraCommand : BukkitCommand(
                 },
                 BukkitCommand(
                         name = "remove",
-                        description = "watch the camera",
+                        description = "remove the camera",
                         placeholders = arrayOf("name")
                 ) { sender, args ->
                     val name = args[0].toLowerCase()
