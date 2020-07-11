@@ -1,18 +1,17 @@
 package com.ericlam.mc.spectate.camera
 
 import com.comphenix.packetwrapper.*
-import com.comphenix.protocol.ProtocolLibrary
 import com.comphenix.protocol.utility.MinecraftReflection
 import com.comphenix.protocol.wrappers.*
 import com.comphenix.protocol.wrappers.nbt.NbtFactory
-import com.destroystokyo.paper.profile.CraftPlayerProfile
-import com.destroystokyo.paper.profile.ProfileProperty
 import com.ericlam.mc.kotlib.bukkit.BukkitPlugin
 import com.ericlam.mc.kotlib.config.Prefix
 import com.ericlam.mc.kotlib.config.Resource
 import com.ericlam.mc.kotlib.config.dto.ConfigFile
 import com.ericlam.mc.kotlib.config.dto.MessageFile
 import com.ericlam.mc.kotlib.msgFormat
+import com.mojang.authlib.GameProfile
+import com.mojang.authlib.properties.Property
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
@@ -66,9 +65,14 @@ object CameraManager {
                 display = SpectateCamera.PROPERTIES.Config.LANG.getPure("show-name").msgFormat(name)
         ).apply {
             val skullMeta = itemMeta as SkullMeta
-            val cpp = CraftPlayerProfile(UUID.randomUUID(), "Camera")
-            cpp.setProperty(ProfileProperty("textures", CAMERA_SKIN))
-            skullMeta.playerProfile = cpp
+            val gp = GameProfile(UUID.randomUUID(), "Camera")
+            gp.properties.put("textures", Property("textures", CAMERA_SKIN))
+            try{
+                val f = skullMeta.javaClass.getDeclaredField("profile").also { it.isAccessible = true }
+                f.set(skullMeta, gp)
+            }catch (e: Exception){
+                SpectateCamera.instance.warning(e.message)
+            }
             itemMeta = skullMeta
         }
         val craftItem = MinecraftReflection.getBukkitItemStack(camera)

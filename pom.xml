@@ -6,7 +6,7 @@
 
     <groupId>com.ericlam.mc.spectatecamera</groupId>
     <artifactId>SpectateCamera</artifactId>
-    <version>1.0.8-SNAPSHOT</version>
+    <version>1.0.9</version>
 
     <repositories>
         <repository>
