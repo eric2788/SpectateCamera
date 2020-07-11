@@ -131,7 +131,8 @@ object CameraManager {
                 p.sendMessage(LANG["not-owner"])
                 return
             }
-            val armorStand = Bukkit.getEntity(camera.entity) ?: let {
+            SpectateCamera.debug("client view distance: ${p.clientViewDistance}, checking: ${NMSManager.getTrackingRange(p.world)}")
+            val armorStand = Bukkit.getEntity(camera.entity)?.takeIf { e -> e.location.distance(p.location) <= NMSManager.getTrackingRange(p.world) } ?: let {
                 p.sendMessage(LANG["error"])
                 return
             }
@@ -157,18 +158,13 @@ object CameraManager {
             spawnFakePlayerPacket.yaw = p.location.yaw
             spawnFakePlayerPacket.position = p.location.toVector()
 
-            val entityTeleport = WrapperPlayServerEntityTeleport()
-            entityTeleport.x = armorStand.location.x
-            entityTeleport.y = armorStand.location.y
-            entityTeleport.z = armorStand.location.z
-            entityTeleport.onGround = false
-            entityTeleport.entityID = p.entityId
-
-
             val cameraPacket = WrapperPlayServerCamera()
             cameraPacket.cameraId = armorStand.entityId
 
-            entityTeleport.sendPacket(p)
+            val entityPacket = WrapperPlayServerEntity()
+            entityPacket.entityID = armorStand.entityId
+
+            entityPacket.sendPacket(p)
             invisiblePacket.sendPacket(p)
             cameraPacket.sendPacket(p)
             fakePlayerPacket.sendPacket(p)

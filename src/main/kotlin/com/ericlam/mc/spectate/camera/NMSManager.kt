@@ -2,6 +2,7 @@ package com.ericlam.mc.spectate.camera
 
 import com.comphenix.protocol.wrappers.WrappedDataWatcher
 import org.bukkit.Bukkit
+import org.bukkit.World
 import org.bukkit.entity.Player
 import java.lang.reflect.Field
 import java.lang.reflect.InvocationTargetException
@@ -15,6 +16,13 @@ object NMSManager {
         val field = registry.getDeclaredField(name).also { field -> field.isAccessible = true }
         val handle = field.get(null)
         return WrappedDataWatcher.Serializer(type, handle, false)
+    }
+
+    fun getTrackingRange(w: World): Int {
+        if (Bukkit.spigot().config.contains("world-settings.${w.name}")){
+            return Bukkit.spigot().config.getInt("world-settings.${w.name}.entity-tracking-range.other")
+        }
+        return Bukkit.spigot().config.getInt("world-settings.default.entity-tracking-range.other")
     }
 
 
