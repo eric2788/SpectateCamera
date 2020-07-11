@@ -10,8 +10,10 @@ import com.ericlam.mc.kotlib.config.Resource
 import com.ericlam.mc.kotlib.config.dto.ConfigFile
 import com.ericlam.mc.kotlib.config.dto.MessageFile
 import com.ericlam.mc.kotlib.msgFormat
+import com.ericlam.mc.kotlib.textOf
 import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
+import net.md_5.bungee.api.ChatMessageType
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
@@ -129,10 +131,8 @@ object CameraManager {
                 p.sendMessage(LANG["not-owner"])
                 return
             }
-            val armorStand = Bukkit.getEntity(camera.entity) as? ArmorStand ?: let {
+            val armorStand = Bukkit.getEntity(camera.entity) ?: let {
                 p.sendMessage(LANG["error"])
-                CAMERA.cameras.remove(name)
-                CAMERA.save()
                 return
             }
 
@@ -157,10 +157,18 @@ object CameraManager {
             spawnFakePlayerPacket.yaw = p.location.yaw
             spawnFakePlayerPacket.position = p.location.toVector()
 
+            val entityTeleport = WrapperPlayServerEntityTeleport()
+            entityTeleport.x = armorStand.location.x
+            entityTeleport.y = armorStand.location.y
+            entityTeleport.z = armorStand.location.z
+            entityTeleport.onGround = false
+            entityTeleport.entityID = p.entityId
+
 
             val cameraPacket = WrapperPlayServerCamera()
             cameraPacket.cameraId = armorStand.entityId
 
+            entityTeleport.sendPacket(p)
             invisiblePacket.sendPacket(p)
             cameraPacket.sendPacket(p)
             fakePlayerPacket.sendPacket(p)
@@ -168,7 +176,7 @@ object CameraManager {
 
             spectating.add(p)
             p.sendMessage(LANG["entered"].msgFormat(name))
-            p.sendActionBar(LANG.getPure("leave-hint"))
+            p.spigot().sendMessage(ChatMessageType.ACTION_BAR, textOf(LANG.getPure("leave-hint")))
         }
 
     }
@@ -183,9 +191,8 @@ object CameraManager {
                 p.sendMessage(LANG["not-owner"])
                 return false
             }
-            val armorStand = Bukkit.getEntity(camera.entity) as? ArmorStand ?: let {
+            val armorStand = p.world.getEntitiesByClass(ArmorStand::class.java).find { it.uniqueId == camera.entity } ?: let {
                 p.sendMessage(LANG["error"])
-                CAMERA.cameras.remove(name)
                 return false
             }
             armorStand.remove()
@@ -215,7 +222,7 @@ object CameraManager {
         val craftItem = MinecraftReflection.getBukkitItemStack(item)
         if (craftItem == null || craftItem.type == Material.AIR) throw IllegalStateException("craftItem is null or air, skipped")
         val wrapper = NbtFactory.fromItemOptional(craftItem)
-        if (wrapper.isEmpty) {
+        if (!wrapper.isPresent) {
             SpectateCamera.debug("item has no nbt, skipped")
             return
         }
@@ -235,6 +242,7 @@ object CameraManager {
         stand.isInvulnerable = true
         stand.isVisible = false
         stand.isCustomNameVisible = true
+        stand.setGravity(false)
         stand.customName = SpectateCamera.PROPERTIES.Config.LANG.getPure("show-name").msgFormat(name)
         stand.removeWhenFarAway = false
         stand.setRotation(bFace.toYaw(b.blockData is Rotatable), 0f)

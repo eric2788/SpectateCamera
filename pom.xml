@@ -6,7 +6,7 @@
 
     <groupId>com.ericlam.mc.spectatecamera</groupId>
     <artifactId>SpectateCamera</artifactId>
-    <version>1.0.10</version>
+    <version>1.0.12</version>
 
     <repositories>
         <repository>
@@ -27,8 +27,8 @@
             <version>4.4.0</version>
         </dependency>
         <dependency>
-            <groupId>patched</groupId>
-            <artifactId>1.16</artifactId>
+            <groupId>spigot</groupId>
+            <artifactId>1.15</artifactId>
             <version>R1</version>
         </dependency>
         <dependency>
